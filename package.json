@@ -3,9 +3,28 @@
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
-    "bun-types": "latest"
+    "@eslint/eslintrc": "^3.0.2",
+    "@eslint/js": "^9.1.1",
+    "@typescript-eslint/eslint-plugin": "^6.4.0",
+    "bun-types": "latest",
+    "eslint": "^9.1.1",
+    "eslint-config-standard-with-typescript": "^43.0.1",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0 || ^16.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "globals": "^15.0.0",
+    "typescript": "*",
+    "typescript-eslint": "^7.7.1"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "sparqlalgebrajs": "^4.3.4"
+  },
+  "scripts": {
+    "lint": "eslint --fix .",
+    "build": "rm -r build ; bun run build:ts",
+    "build:ts": "tsc"
   }
 }

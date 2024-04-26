@@ -5,8 +5,6 @@
     "target": "esnext",
     "moduleResolution": "bundler",
     "moduleDetection": "force",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
     "composite": true,
     "strict": true,
     "downlevelIteration": true,
@@ -15,8 +13,20 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "declaration": true,
     "types": [
       "bun-types" // add Bun global
-    ]
-  }
+    ],
+    "outDir": "build"
+  },
+  "include": [
+    "index.ts",
+    "lib/*",
+  ],
+  "exclude": [
+    "node_modules",
+    "test/*"
+  ]
 }
