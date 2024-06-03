@@ -1,6 +1,7 @@
-import { parseLine, getStream, HistoryByQuery, REGEX_LINK_QUEUE_EVENT } from "./util";
+import { parseLine, HistoryByQuery } from "./util";
+import { ReadStream, createReadStream } from "node:fs";
 
-export async function fromLogFile(path: string, forceNodeJs = false, regexLinkQueueEvent: RegExp = REGEX_LINK_QUEUE_EVENT): Promise<HistoryByQuery> {
+export async function fromLogFile(path: string, forceNodeJs = false, ): Promise<HistoryByQuery> {
     const decoder = new TextDecoder();
     let remainingData = "";
     const stream = await getStream(path, forceNodeJs);
@@ -17,7 +18,7 @@ export async function fromLogFile(path: string, forceNodeJs = false, regexLinkQu
         while (lines.length > 1) {
             const currentLine = lines.shift();
             if (currentLine !== undefined) {
-                parseLine(currentLine, history, regexLinkQueueEvent);
+                parseLine(currentLine, history);
             }
         }
         remainingData = lines[0];
@@ -25,13 +26,23 @@ export async function fromLogFile(path: string, forceNodeJs = false, regexLinkQu
     }
     return history;
 }
+
+async function getStream(path: string, forceNodeJs: boolean = false): Promise<ReadableStream<any> | ReadStream> {
+    if (Bun?.file === undefined || forceNodeJs) {
+        return createReadStream(path);
+    } else {
+        const file = Bun.file(path);
+        return await file.stream();
+    }
+}
+
 const originalStdErrWrite = process.stderr.write.bind(process.stdout);
 Object.freeze(originalStdErrWrite);
 
-export function pipeFromLogger(history: HistoryByQuery, regexLinkQueueEvent: RegExp = REGEX_LINK_QUEUE_EVENT) {
+export function pipeFromLogger(history: HistoryByQuery) {
 
     process.stderr.write = (line: string, encoding: any) => {
-        parseLine(line, history, regexLinkQueueEvent);
+        parseLine(line, history);
         return originalStdErrWrite(line, encoding);
     };
 }

@@ -17,6 +17,7 @@
     "inlineSources": true,
     "declaration": true,
     "types": [
+      "jest",
       "bun-types" // add Bun global
     ],
     "outDir": "build"
