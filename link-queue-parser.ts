@@ -19,10 +19,6 @@ const logFilePath = options.logFilePath;
 const outputPath = options.outputPath;
 const print = options.print;
 
-console.log(logFilePath);
-console.log(outputPath);
-console.log(print);
-
 const history = await fromLogFile(logFilePath);
 
 
