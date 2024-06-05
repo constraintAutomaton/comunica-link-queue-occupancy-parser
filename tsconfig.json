@@ -24,6 +24,7 @@
   },
   "include": [
     "index.ts",
+    "link-queue-parser.ts",
     "lib/*",
   ],
   "exclude": [
