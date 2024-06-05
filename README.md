@@ -2,7 +2,7 @@
 
 A simple software/library to parse the link queue occupancy of [comunica-feature-link-traversal](https://github.com/comunica/comunica-feature-link-traversal)
 
-## installation
+## Installation
 
 ```bash
 bun install
