@@ -31,3 +31,42 @@ Options:
   -p, --print                   print the serialized link queue occupancy information into the console
   -h, --help                    display help for command
 ```
+## Example output
+```json
+{
+  "SELECT ?personId ?firstName ?lastName WHERE {\n  <http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521> <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\n  <http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521> <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> ?creator.\n  ?creator <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?personId.\n  ?creator <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName> ?firstName.\n  ?creator <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName> ?lastName.\n}": {
+    "pushEvent": [
+      {
+        "url": "http://localhost:3000/pods/00000000000000000150/comments/United_States",
+        "reachability_criteria": "urn:comunica:default:extract-links/actors#solid-shape-index",
+        "timestamp": 1716368918822,
+        "parent": {
+          "url": "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
+          "reachability_criteria": null
+        },
+        "eventType": "Push"
+      },
+      {
+        "url": "http://localhost:3000/pods/00000000000000000150/comments/Finland",
+        "reachability_criteria": "urn:comunica:default:extract-links/actors#solid-shape-index",
+        "timestamp": 1716368918822,
+        "parent": {
+          "url": "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
+          "reachability_criteria": null
+        },
+        "eventType": "Push"
+      },
+      ...
+    ],
+    "popEvent": [
+      {
+        "url": "http://localhost:3000/pods/00000000000000000150/comments/United_States",
+        "reachability_criteria": "urn:comunica:default:extract-links/actors#solid-shape-index",
+        "timestamp": 1716368918824,
+        "eventType": "Pop"
+      },
+     ...
+    ]
+  }
+}
+```
