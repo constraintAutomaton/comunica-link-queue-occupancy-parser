@@ -173,7 +173,7 @@ describe('util', () => {
         [
           [query, { pushEvent: [event], popEvent: [] }]
         ]
-      )
+      );
       expect(history).toStrictEqual(expectedHistory);
     });
 
@@ -533,7 +533,7 @@ describe('util', () => {
         [
           [query, { pushEvent: [newEvent, lastPushEvent], popEvent: [event, lastPopEvent] }]
         ]
-      )
+      );
       expect(history).toStrictEqual(newExpectedHistoryWithLastPopEvent);
 
 
@@ -838,7 +838,7 @@ describe('util', () => {
           [query, { pushEvent: [event], popEvent: [] }],
           [newQuery, { pushEvent: [newEvent], popEvent: [] }]
         ]
-      )
+      );
       expect(history).toStrictEqual(newExpectedHistory);
 
     });

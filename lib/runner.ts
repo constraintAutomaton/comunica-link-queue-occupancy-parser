@@ -1,7 +1,8 @@
 import { parseLine, HistoryByQuery } from "./util";
 import { ReadStream, createReadStream } from "node:fs";
+import { Readable } from 'stream';
 
-export async function fromLogFile(path: string, forceNodeJs = false, ): Promise<HistoryByQuery> {
+export async function fromLogFile(path: string, forceNodeJs = false): Promise<HistoryByQuery> {
     const decoder = new TextDecoder();
     let remainingData = "";
     const stream = await getStream(path, forceNodeJs);
@@ -13,9 +14,9 @@ export async function fromLogFile(path: string, forceNodeJs = false, ): Promise<
 
         remainingData += str;
 
-        const lines = remainingData.split(/\r?\n/);
+        const lines = remainingData.split('\n');
 
-        while (lines.length > 1) {
+        while (lines.length > 0) {
             const currentLine = lines.shift();
             if (currentLine !== undefined) {
                 parseLine(currentLine, history);
@@ -27,26 +28,23 @@ export async function fromLogFile(path: string, forceNodeJs = false, ): Promise<
     return history;
 }
 
-async function getStream(path: string, forceNodeJs: boolean = false): Promise<ReadableStream<any> | ReadStream> {
+export function fromString(data: string): HistoryByQuery {
+    const history: HistoryByQuery = new Map();
+
+    const dataByLine = data.split("\n");
+
+    for (const line of dataByLine) {
+        parseLine(line, history);
+    }
+    return history;
+}
+
+async function getStream(data: string, forceNodeJs: boolean = false): Promise<ReadableStream<any> | ReadStream | Readable> {
     if (Bun?.file === undefined || forceNodeJs) {
-        return createReadStream(path);
+        return createReadStream(data);
     } else {
-        const file = Bun.file(path);
+        const file = Bun.file(data);
         return await file.stream();
     }
 }
 
-const originalStdErrWrite = process.stderr.write.bind(process.stdout);
-Object.freeze(originalStdErrWrite);
-
-export function pipeFromLogger(history: HistoryByQuery) {
-
-    process.stderr.write = (line: string, encoding: any) => {
-        parseLine(line, history);
-        return originalStdErrWrite(line, encoding);
-    };
-}
-
-export function revertToOriginalStdErrImplementation(): void {
-    process.stderr.write = originalStdErrWrite;
-}
