@@ -44,5 +44,12 @@
     "prepare": "bun run build",
     "version": "manual-git-changelog onversion",
     "prepublishOnly": "bun run build"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/constraintAutomaton/comunica-link-queue-occupancy-parser.git"
+  },
+  "homepage": "https://github.com/constraintAutomaton/comunica-link-queue-occupancy-parser/blob/main/README.md",
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610",
+  "version": "1.0.0"
 }
