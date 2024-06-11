@@ -8,7 +8,7 @@ export const REGEX_LINK_QUEUE_EVENT = /TRACE: <Link queue occupancy> { data: '(?
  * @param {string} line - the line from the log
  * @param {HistoryByQuery} history - the history of the link queues
  */
-export function parseLine(line: string, history: HistoryByQuery):void {
+export function parseLine(line: string, history: HistoryByQuery): void {
     const groups = REGEX_LINK_QUEUE_EVENT.exec(line)?.groups;
     if (groups !== undefined) {
         const linkQueueEvent: ILinkQueueEvent = JSON.parse(groups['jsonEvent']);
@@ -21,23 +21,23 @@ export function parseLine(line: string, history: HistoryByQuery):void {
         switch (linkQueueEvent.type) {
             case EventType[EventType.Push]:
                 linkQueueEvent.link.eventType = EventType[EventType.Push];
-                currentHistory.pushEvent.push(linkQueueEvent.link);
+                currentHistory.pushEvent.push({...linkQueueEvent.link, queueStatistics:linkQueueEvent.queueStatistics});
                 break;
 
             case EventType[EventType.Pop]:
                 linkQueueEvent.link.eventType = EventType[EventType.Pop];
-                currentHistory.popEvent.push(linkQueueEvent.link);
+                currentHistory.popEvent.push({...linkQueueEvent.link, queueStatistics:linkQueueEvent.queueStatistics});
                 break;
         }
     }
 }
 /**
  * convert the history into a file
- * @param {string} path -
+ * @param {string} path
  * @param {HistoryByQuery} history 
  * @param {boolean} forceNodeJs 
  */
-export async function historyByQueryToFile(path: string, history: HistoryByQuery, forceNodeJs: boolean = false):Promise<void> {
+export async function historyByQueryToFile(path: string, history: HistoryByQuery, forceNodeJs: boolean = false): Promise<void> {
     await writeToFile(path, Object.fromEntries(history), forceNodeJs);
 }
 
@@ -64,8 +64,12 @@ export type HistoryByQuery = Map<string, IHistory>;
  * Timeline of the link queue divided into pushed and popped
  */
 export interface IHistory {
-    pushEvent: IURLStatistic[];
-    popEvent: IURLStatistic[];
+    pushEvent: IHistoryEvent[];
+    popEvent: IHistoryEvent[];
+}
+
+export interface IHistoryEvent extends IURLStatistic {
+    queueStatistics: IQueueStatistics;
 }
 /**
  * Information about an URL
@@ -74,6 +78,7 @@ export interface IURLStatistic {
     eventType?: string;
     url: string;
     reachability_criteria: string | null;
+    reachability_criteria_dynamic_info?: object;
     timestamp?: number;
     parent?: IURLStatistic;
 }
@@ -84,4 +89,21 @@ export interface ILinkQueueEvent {
     type: string;
     link: IURLStatistic;
     query: Algebra.Operation;
+    queueStatistics: IQueueStatistics;
+}
+
+/**
+ * Ratio of the reachability criteria of the link in the queue
+ */
+interface IReachabilityRatio {
+    pushEvent: Record<string, number>;
+    popEvent: Record<string, number>;
+}
+
+/**
+ * Statistic of the link queue
+ */
+interface IQueueStatistics {
+    size: number;
+    reachabilityRatio: IReachabilityRatio;
 }
