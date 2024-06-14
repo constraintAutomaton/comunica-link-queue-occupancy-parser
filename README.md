@@ -19,7 +19,7 @@ const history = await fromLogFile(logFilePath);
 historyByQueryToFile(outputPath, history);
 ```
 
-## Cli
+## CLI
 
 The cli program is located at `./link-queue-parser.ts` or in the build folder `./build/link-queue-parser.js`
 
