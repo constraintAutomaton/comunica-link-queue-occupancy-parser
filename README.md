@@ -34,49 +34,13 @@ Options:
 ## Example output
 ```json
 {
-    "SELECT ?personId ?firstName ?lastName WHERE {\n  <http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521> <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\n  <http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521> <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> ?creator.\n  ?creator <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?personId.\n  ?creator <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName> ?firstName.\n  ?creator <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName> ?lastName.\n}": {
+    "SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}": {
         "pushEvent": [
             {
                 "url": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
-                "reachability_criteria": "urn:comunica:default:extract-links/actors#predicates-solid",
-                "reachability_criteria_dynamic_info": {
-                    "predicates": [
-                        "http://www.w3.org/ns/pim/space#storage"
-                    ],
-                    "matchingPredicate": "http://www.w3.org/ns/pim/space#storage",
-                    "checkSubject": true
-                },
-                "timestamp": 1718116547072,
-                "parent": {
-                    "url": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
-                    "reachability_criteria": null
-                },
-                "eventType": "Push",
-                "queueStatistics": {
-                    "size": 1,
-                    "reachabilityRatio": {
-                        "pushEvent": {
-                            "urn:comunica:default:extract-links/actors#predicates-solid": 1
-                        },
-                        "popEvent": {}
-                    }
-                }
-            },
-            {
-                "url": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/",
-                "reachability_criteria": "urn:comunica:default:extract-links/actors#predicates-ldp",
-                "reachability_criteria_dynamic_info": {
-                    "predicates": [
-                        "http://www.w3.org/ns/ldp#contains"
-                    ],
-                    "matchingPredicate": "http://www.w3.org/ns/ldp#contains",
-                    "checkSubject": true
-                },
-                "timestamp": 1718116547146,
-                "parent": {
-                    "url": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
-                    "reachability_criteria": "urn:comunica:default:extract-links/actors#predicates-solid",
-                    "reachability_criteria_dynamic_info": {
+                "producedByActor": {
+                    "name": "urn:comunica:default:extract-links/actors#predicates-solid",
+                    "metadata": {
                         "predicates": [
                             "http://www.w3.org/ns/pim/space#storage"
                         ],
@@ -84,38 +48,21 @@ Options:
                         "checkSubject": true
                     }
                 },
-                "eventType": "Push",
-                "queueStatistics": {
+                "timestamp": 1718631765370,
+                "parent": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
+                "queue": {
                     "size": 1,
-                    "reachabilityRatio": {
-                        "pushEvent": {
-                            "urn:comunica:default:extract-links/actors#predicates-solid": 1,
-                            "urn:comunica:default:extract-links/actors#predicates-ldp": 1
-                        },
-                        "popEvent": {
-                            "urn:comunica:default:extract-links/actors#predicates-solid": 1
-                        }
-                    }
+                    "pushEvent": {
+                        "urn:comunica:default:extract-links/actors#predicates-solid": 1
+                    },
+                    "popEvent": {}
                 }
             },
-        ...
-          {
-                "url": "https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/data/forum00000000755914244125",
-                "reachability_criteria": "urn:comunica:default:extract-links/actors#predicates-common",
-                "reachability_criteria_dynamic_info": {
-                    "predicates": [
-                        "http://www.w3.org/2000/01/rdf-schema#seeAlso",
-                        "http://www.w3.org/2002/07/owl##sameAs",
-                        "http://xmlns.com/foaf/0.1/isPrimaryTopicOf"
-                    ],
-                    "matchingPredicate": "http://www.w3.org/2000/01/rdf-schema#seeAlso",
-                    "checkSubject": false
-                },
-                "timestamp": 1718116548176,
-                "parent": {
-                    "url": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/posts/2011-11-17",
-                    "reachability_criteria": "urn:comunica:default:extract-links/actors#predicates-ldp",
-                    "reachability_criteria_dynamic_info": {
+            {
+                "url": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/",
+                "producedByActor": {
+                    "name": "urn:comunica:default:extract-links/actors#predicates-ldp",
+                    "metadata": {
                         "predicates": [
                             "http://www.w3.org/ns/ldp#contains"
                         ],
@@ -123,106 +70,130 @@ Options:
                         "checkSubject": true
                     }
                 },
-                "eventType": "Push",
-                "queueStatistics": {
+                "timestamp": 1718631765472,
+                "parent": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+                "queue": {
                     "size": 1,
-                    "reachabilityRatio": {
-                        "pushEvent": {
-                            "urn:comunica:default:extract-links/actors#predicates-solid": 1,
-                            "urn:comunica:default:extract-links/actors#predicates-ldp": 91,
-                            "urn:comunica:default:extract-links/actors#predicates-common": 33
-                        },
-                        "popEvent": {
-                            "urn:comunica:default:extract-links/actors#predicates-solid": 1,
-                            "urn:comunica:default:extract-links/actors#predicates-ldp": 91,
-                            "urn:comunica:default:extract-links/actors#predicates-common": 32
-                        }
+                    "pushEvent": {
+                        "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                        "urn:comunica:default:extract-links/actors#predicates-ldp": 1
+                    },
+                    "popEvent": {
+                        "urn:comunica:default:extract-links/actors#predicates-solid": 1
                     }
                 }
-            }
+            },
+            ...
+            {
+                "url": "https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/data/forum00000000755914244125",
+                "producedByActor": {
+                  "name": "urn:comunica:default:extract-links/actors#predicates-common",
+                  "metadata": {
+                    "predicates": [
+                      "http://www.w3.org/2000/01/rdf-schema#seeAlso",
+                      "http://www.w3.org/2002/07/owl##sameAs",
+                      "http://xmlns.com/foaf/0.1/isPrimaryTopicOf"
+                    ],
+                    "matchingPredicate": "http://www.w3.org/2000/01/rdf-schema#seeAlso",
+                    "checkSubject": false
+                  }
+                },
+                "timestamp": 1718631766440,
+                "parent": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/posts/2011-11-17",
+                "queue": {
+                  "size": 1,
+                  "pushEvent": {
+                    "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                    "urn:comunica:default:extract-links/actors#predicates-ldp": 91,
+                    "urn:comunica:default:extract-links/actors#predicates-common": 32
+                  },
+                  "popEvent": {
+                    "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                    "urn:comunica:default:extract-links/actors#predicates-ldp": 91,
+                    "urn:comunica:default:extract-links/actors#predicates-common": 31
+                  }
+                }
+              }
         ],
         "popEvent": [
             {
                 "url": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
-                "reachability_criteria": "urn:comunica:default:extract-links/actors#predicates-solid",
-                "reachability_criteria_dynamic_info": {
-                    "predicates": [
-                        "http://www.w3.org/ns/pim/space#storage"
-                    ],
-                    "matchingPredicate": "http://www.w3.org/ns/pim/space#storage",
-                    "checkSubject": true
+                "producedByActor": {
+                    "name": "urn:comunica:default:extract-links/actors#predicates-solid",
+                    "metadata": {
+                        "predicates": [
+                            "http://www.w3.org/ns/pim/space#storage"
+                        ],
+                        "matchingPredicate": "http://www.w3.org/ns/pim/space#storage",
+                        "checkSubject": true
+                    }
                 },
-                "timestamp": 1718116547073,
-                "eventType": "Pop",
-                "queueStatistics": {
+                "timestamp": 1718631765370,
+                "queue": {
                     "size": 0,
-                    "reachabilityRatio": {
-                        "pushEvent": {
-                            "urn:comunica:default:extract-links/actors#predicates-solid": 1
-                        },
-                        "popEvent": {
-                            "urn:comunica:default:extract-links/actors#predicates-solid": 1
-                        }
+                    "pushEvent": {
+                        "urn:comunica:default:extract-links/actors#predicates-solid": 1
+                    },
+                    "popEvent": {
+                        "urn:comunica:default:extract-links/actors#predicates-solid": 1
                     }
                 }
             },
             {
                 "url": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/",
-                "reachability_criteria": "urn:comunica:default:extract-links/actors#predicates-ldp",
-                "reachability_criteria_dynamic_info": {
-                    "predicates": [
-                        "http://www.w3.org/ns/ldp#contains"
-                    ],
-                    "matchingPredicate": "http://www.w3.org/ns/ldp#contains",
-                    "checkSubject": true
+                "producedByActor": {
+                    "name": "urn:comunica:default:extract-links/actors#predicates-ldp",
+                    "metadata": {
+                        "predicates": [
+                            "http://www.w3.org/ns/ldp#contains"
+                        ],
+                        "matchingPredicate": "http://www.w3.org/ns/ldp#contains",
+                        "checkSubject": true
+                    }
                 },
-                "timestamp": 1718116547147,
-                "eventType": "Pop",
-                "queueStatistics": {
+                "timestamp": 1718631765473,
+                "queue": {
                     "size": 4,
-                    "reachabilityRatio": {
-                        "pushEvent": {
-                            "urn:comunica:default:extract-links/actors#predicates-solid": 1,
-                            "urn:comunica:default:extract-links/actors#predicates-ldp": 5
-                        },
-                        "popEvent": {
-                            "urn:comunica:default:extract-links/actors#predicates-solid": 1,
-                            "urn:comunica:default:extract-links/actors#predicates-ldp": 1
-                        }
+                    "pushEvent": {
+                        "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                        "urn:comunica:default:extract-links/actors#predicates-ldp": 5
+                    },
+                    "popEvent": {
+                        "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                        "urn:comunica:default:extract-links/actors#predicates-ldp": 1
                     }
                 }
             },
-       ...
-           {
+            ...
+            {
                 "url": "https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/data/forum00000000755914244125",
-                "reachability_criteria": "urn:comunica:default:extract-links/actors#predicates-common",
-                "reachability_criteria_dynamic_info": {
+                "producedByActor": {
+                  "name": "urn:comunica:default:extract-links/actors#predicates-common",
+                  "metadata": {
                     "predicates": [
-                        "http://www.w3.org/2000/01/rdf-schema#seeAlso",
-                        "http://www.w3.org/2002/07/owl##sameAs",
-                        "http://xmlns.com/foaf/0.1/isPrimaryTopicOf"
+                      "http://www.w3.org/2000/01/rdf-schema#seeAlso",
+                      "http://www.w3.org/2002/07/owl##sameAs",
+                      "http://xmlns.com/foaf/0.1/isPrimaryTopicOf"
                     ],
                     "matchingPredicate": "http://www.w3.org/2000/01/rdf-schema#seeAlso",
                     "checkSubject": false
+                  }
                 },
-                "timestamp": 1718116548176,
-                "eventType": "Pop",
-                "queueStatistics": {
-                    "size": 0,
-                    "reachabilityRatio": {
-                        "pushEvent": {
-                            "urn:comunica:default:extract-links/actors#predicates-solid": 1,
-                            "urn:comunica:default:extract-links/actors#predicates-ldp": 91,
-                            "urn:comunica:default:extract-links/actors#predicates-common": 33
-                        },
-                        "popEvent": {
-                            "urn:comunica:default:extract-links/actors#predicates-solid": 1,
-                            "urn:comunica:default:extract-links/actors#predicates-ldp": 91,
-                            "urn:comunica:default:extract-links/actors#predicates-common": 33
-                        }
-                    }
+                "timestamp": 1718631766440,
+                "queue": {
+                  "size": 0,
+                  "pushEvent": {
+                    "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                    "urn:comunica:default:extract-links/actors#predicates-ldp": 91,
+                    "urn:comunica:default:extract-links/actors#predicates-common": 32
+                  },
+                  "popEvent": {
+                    "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                    "urn:comunica:default:extract-links/actors#predicates-ldp": 91,
+                    "urn:comunica:default:extract-links/actors#predicates-common": 32
+                  }
                 }
-            }
+              }
         ]
     }
 }
