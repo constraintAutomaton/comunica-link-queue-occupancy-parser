@@ -1,9 +1,7 @@
-import { describe, expect, it, jest, beforeEach, mock } from "bun:test";
-import { EventType, HistoryByQuery } from "../lib/util";
+import { describe, expect, it, jest, mock } from "bun:test";
+import { HistoryByQuery } from "../lib/util";
 import { fromLogFile, fromString } from '../lib/runner';
-import { toSparql } from "sparqlalgebrajs";
-
-const streamifyArray = require('streamify-array');
+import streamifyArray from 'streamify-array';
 
 if (Bun !== undefined) {
     Bun.file = jest.fn().mockImplementation((data: any) => {
@@ -20,7 +18,7 @@ if (Bun !== undefined) {
 
 mock.module('node:fs', () => {
     return {
-        createReadStream(data: any){
+        createReadStream(data: any) {
             data = data.map((str) => {
                 return new TextEncoder().encode(str).buffer;
             })
@@ -30,153 +28,40 @@ mock.module('node:fs', () => {
 });
 
 describe('fromLogFile', () => {
-    describe('bun', () => {
-        it('should return an empty history given an empty string', async () => {
+    describe.each([
+        ['bun', false],
+        ['nodejs', true]
+    ])("implementation %s", (implementationName, flag) => {
+        it(`${implementationName}: should return an empty history given an empty string`, async () => {
             const expectedHistory: HistoryByQuery = new Map();
             const data: any = [""];
 
-            expect(await fromLogFile(data)).toStrictEqual(expectedHistory);
+            expect(await fromLogFile(data, flag)).toStrictEqual(expectedHistory);
         });
 
-        it('should return an history given a data with one line', async () => {
-            const data: any = [`[0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }`];
-            const query = toSparql(<any>{
-                "type": "project",
-                "input": {
-                    "type": "join",
-                    "input": [
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "messageId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "personId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "firstName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "lastName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        }
-                    ]
-                },
-                "variables": [
-                    {
-                        "termType": "Variable",
-                        "value": "personId"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "firstName"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "lastName"
-                    }
-                ]
-            });
+        it(`${implementationName}: should return an history given a data with one line`, async () => {
+            const data: any = [`[0m[34m[2024-06-17T13:42:45.370Z]  TRACE: <Link queue occupancy> { data: '{"type":"PUSH","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card"},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":1,"pushEvent":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvent":{}}}' }`];
+            const query = `SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\n}`;
 
             const event = {
-                eventType: EventType[EventType.Push],
-                url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-                reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-                timestamp: 1716368918822,
-                parent: {
-                    url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                    reachability_criteria: null
-                }
+                url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+                producedByActor: {
+                    name: "urn:comunica:default:extract-links/actors#predicates-solid",
+                    metadata: {
+                        predicates: ["http://www.w3.org/ns/pim/space#storage"],
+                        matchingPredicate: "http://www.w3.org/ns/pim/space#storage",
+                        checkSubject: true
+                    }
+                },
+                parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
+                timestamp: 1718631765370,
+                queue: {
+                    popEvent: {},
+                    pushEvent: {
+                        "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                    },
+                    size: 1,
+                },
             };
 
             const expectedHistory = new Map(
@@ -185,474 +70,127 @@ describe('fromLogFile', () => {
                 ]
             );
 
-            expect(await fromLogFile(data)).toStrictEqual(expectedHistory);
+            expect(await fromLogFile(data, flag)).toStrictEqual(expectedHistory);
         });
 
-        it('should return an history given data with multiple lines', async () => {
+        it(`${implementationName}: should return an history given data with multiple lines`, async () => {
             const data: any = [`
             [2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico
-            [0m[34m[2024-05-22T09:08:38.824Z]  TRACE: <Link queue occupancy> { data: '{"type":"Pop","link":{"url":"http://localhost:3000/pods/00000000000000000150/comments/United_States","reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index","timestamp":1716368918824},"query":{"type":"project","input":{"type":"join","input":[{"termType":"Quad","value":"","subject":{"termType":"NamedNode","value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"},"object":{"termType":"Variable","value":"messageId"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"NamedNode","value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"},"object":{"termType":"Variable","value":"creator"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"},"object":{"termType":"Variable","value":"personId"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"},"object":{"termType":"Variable","value":"firstName"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"},"object":{"termType":"Variable","value":"lastName"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"}]},"variables":[{"termType":"Variable","value":"personId"},{"termType":"Variable","value":"firstName"},{"termType":"Variable","value":"lastName"}]}}' }
+            [0m[34m[2024-06-17T13:42:45.370Z]  TRACE: <Link queue occupancy> { data: '{"type":"PUSH","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card"},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":1,"pushEvent":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvent":{}}}' }
             [2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico`,
-                `[0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }
-            [0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States2", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }
-            [0m[34m[2024-05-22T09:08:38.824Z]  TRACE: <Link queue occupancy> { data: '{"type":"Pop","link":{"url":"http://localhost:3000/pods/00000000000000000150/comments/United","reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index","timestamp":1716368918824},"query":{"type":"project","input":{"type":"join","input":[{"termType":"Quad","value":"","subject":{"termType":"NamedNode","value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"},"object":{"termType":"Variable","value":"messageId"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"NamedNode","value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"},"object":{"termType":"Variable","value":"creator"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"},"object":{"termType":"Variable","value":"personId"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"},"object":{"termType":"Variable","value":"firstName"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"},"object":{"termType":"Variable","value":"lastName"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"}]},"variables":[{"termType":"Variable","value":"personId"},{"termType":"Variable","value":"firstName"},{"termType":"Variable","value":"lastName"}]}}' }
+                `[0m[34m[2024-06-17T13:42:45.370Z]  TRACE: <Link queue occupancy> { data: '{"type":"POP","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":0,"pushEvent":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvent":{"urn:comunica:default:extract-links/actors#predicates-solid":1}}}' }
             `];
-            const query = toSparql(<any>{
-                "type": "project",
-                "input": {
-                    "type": "join",
-                    "input": [
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "messageId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "personId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "firstName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "lastName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        }
-                    ]
-                },
-                "variables": [
-                    {
-                        "termType": "Variable",
-                        "value": "personId"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "firstName"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "lastName"
+            const query = `SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\n}`;
+
+
+            const pushEvent = {
+                url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+                producedByActor: {
+                    name: "urn:comunica:default:extract-links/actors#predicates-solid",
+                    metadata: {
+                        predicates: ["http://www.w3.org/ns/pim/space#storage"],
+                        matchingPredicate: "http://www.w3.org/ns/pim/space#storage",
+                        checkSubject: true
                     }
-                ]
-            });
-
-            const event = {
-                eventType: EventType[EventType.Pop],
-                url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-                reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-                timestamp: 1716368918824
+                },
+                parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
+                timestamp: 1718631765370,
+                queue: {
+                    popEvent: {},
+                    pushEvent: {
+                        "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                    },
+                    size: 1,
+                },
             };
 
-            const newEvent = {
-                eventType: EventType[EventType.Push],
-                url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-                reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-                timestamp: 1716368918822,
-                parent: {
-                    url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                    reachability_criteria: null
-                }
-            };
-
-            const lastPushEvent = {
-                eventType: EventType[EventType.Push],
-                url: "http://localhost:3000/pods/00000000000000000150/comments/United_States2",
-                reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-                timestamp: 1716368918822,
-                parent: {
-                    url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                    reachability_criteria: null
-                }
-            };
-
-            const lastPopEvent = {
-                eventType: EventType[EventType.Pop],
-                url: "http://localhost:3000/pods/00000000000000000150/comments/United",
-                reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-                timestamp: 1716368918824
+            const popEvent = {
+                url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+                producedByActor: {
+                    name: "urn:comunica:default:extract-links/actors#predicates-solid",
+                    metadata: {
+                        predicates: ["http://www.w3.org/ns/pim/space#storage"],
+                        matchingPredicate: "http://www.w3.org/ns/pim/space#storage",
+                        checkSubject: true
+                    }
+                },
+                queue: {
+                    popEvent: {
+                        "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                    },
+                    pushEvent: {
+                        "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                    },
+                    size: 0,
+                },
+                timestamp: 1718631765370
             };
 
             const expectedHistory = new Map(
                 [
-                    [query, { pushEvent: [newEvent, lastPushEvent], popEvent: [event, lastPopEvent] }]
+                    [query, { pushEvent: [pushEvent], popEvent: [popEvent] }]
                 ]
             );
 
-            expect(await fromLogFile(data)).toStrictEqual(expectedHistory);
+            expect(await fromLogFile(data, flag)).toStrictEqual(expectedHistory);
         });
 
-        it('should return an history given data with multiple lines from multiple queries', async () => {
+        it(`${implementationName}: should return an history given data with multiple lines from multiple queries`, async () => {
+            const line = `[0m[34m[2024-06-17T13:42:45.370Z]  TRACE: <Link queue occupancy> { data: '{"type":"PUSH","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card"},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":1,"pushEvent":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvent":{}}}' }`;
+            const newLine = `[0m[34m[2024-06-17T13:42:45.370Z]  TRACE: <Link queue occupancy> { data: '{"type":"PUSH","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card"},"query":"SELECT ?messageId1 ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId1.\\n}","queue":{"size":1,"pushEvent":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvent":{}}}' }`;
+
             const data: any = [
-                `[0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }`,
-                `[0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#687195645211"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }`,
                 `[2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico`,
-                `[2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico`
+                line,
+                `[2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico`,
+                newLine
             ];
 
-            const query = toSparql(<any>{
-                "type": "project",
-                "input": {
-                    "type": "join",
-                    "input": [
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "messageId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "personId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "firstName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "lastName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        }
-                    ]
-                },
-                "variables": [
-                    {
-                        "termType": "Variable",
-                        "value": "personId"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "firstName"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "lastName"
-                    }
-                ]
-            });
+            const query = `SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\n}`;
 
             const event = {
-                eventType: EventType[EventType.Push],
-                url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-                reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-                timestamp: 1716368918822,
-                parent: {
-                    url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                    reachability_criteria: null
-                }
-            };
-            const newQuery = toSparql(<any>{
-                "type": "project",
-                "input": {
-                    "type": "join",
-                    "input": [
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#687195645211"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "messageId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "personId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "firstName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "lastName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        }
-                    ]
-                },
-                "variables": [
-                    {
-                        "termType": "Variable",
-                        "value": "personId"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "firstName"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "lastName"
+                url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+                producedByActor: {
+                    name: "urn:comunica:default:extract-links/actors#predicates-solid",
+                    metadata: {
+                        predicates: ["http://www.w3.org/ns/pim/space#storage"],
+                        matchingPredicate: "http://www.w3.org/ns/pim/space#storage",
+                        checkSubject: true
                     }
-                ]
-            });
+                },
+                parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
+                timestamp: 1718631765370,
+                queue: {
+                    popEvent: {},
+                    pushEvent: {
+                        "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                    },
+                    size: 1,
+                },
+            };
+
+            const newQuery = `SELECT ?messageId1 ?messageCreationDate ?messageContent WHERE {\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId1.\n}`;
+
 
             const newEvent = {
-                eventType: EventType[EventType.Push],
-                url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-                reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-                timestamp: 1716368918822,
-                parent: {
-                    url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                    reachability_criteria: null
-                }
+                url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+                producedByActor: {
+                    name: "urn:comunica:default:extract-links/actors#predicates-solid",
+                    metadata: {
+                        predicates: ["http://www.w3.org/ns/pim/space#storage"],
+                        matchingPredicate: "http://www.w3.org/ns/pim/space#storage",
+                        checkSubject: true
+                    }
+                },
+                parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
+                timestamp: 1718631765370,
+                queue: {
+                    popEvent: {},
+                    pushEvent: {
+                        "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                    },
+                    size: 1,
+                },
             };
 
             const expectedHistory = new Map(
@@ -662,646 +200,9 @@ describe('fromLogFile', () => {
                 ]
             );
 
-            expect(await fromLogFile(data)).toStrictEqual(expectedHistory);
+            expect(await fromLogFile(data, flag)).toStrictEqual(expectedHistory);
         });
     });
-
-    describe('nodejs', () => {
-        it('should return an empty history given an empty string', async () => {
-            const expectedHistory: HistoryByQuery = new Map();
-            const data: any = [""];
-
-            expect(await fromLogFile(data, true)).toStrictEqual(expectedHistory);
-        });
-
-        it('should return an history given a data with one line', async () => {
-            const data: any = [`[0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }`];
-            const query = toSparql(<any>{
-                "type": "project",
-                "input": {
-                    "type": "join",
-                    "input": [
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "messageId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "personId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "firstName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "lastName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        }
-                    ]
-                },
-                "variables": [
-                    {
-                        "termType": "Variable",
-                        "value": "personId"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "firstName"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "lastName"
-                    }
-                ]
-            });
-
-            const event = {
-                eventType: EventType[EventType.Push],
-                url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-                reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-                timestamp: 1716368918822,
-                parent: {
-                    url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                    reachability_criteria: null
-                }
-            };
-
-            const expectedHistory = new Map(
-                [
-                    [query, { pushEvent: [event], popEvent: [] }]
-                ]
-            );
-
-            expect(await fromLogFile(data, true)).toStrictEqual(expectedHistory);
-        });
-
-        it('should return an history given data with multiple lines', async () => {
-            const data: any = [`
-            [2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico
-            [0m[34m[2024-05-22T09:08:38.824Z]  TRACE: <Link queue occupancy> { data: '{"type":"Pop","link":{"url":"http://localhost:3000/pods/00000000000000000150/comments/United_States","reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index","timestamp":1716368918824},"query":{"type":"project","input":{"type":"join","input":[{"termType":"Quad","value":"","subject":{"termType":"NamedNode","value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"},"object":{"termType":"Variable","value":"messageId"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"NamedNode","value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"},"object":{"termType":"Variable","value":"creator"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"},"object":{"termType":"Variable","value":"personId"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"},"object":{"termType":"Variable","value":"firstName"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"},"object":{"termType":"Variable","value":"lastName"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"}]},"variables":[{"termType":"Variable","value":"personId"},{"termType":"Variable","value":"firstName"},{"termType":"Variable","value":"lastName"}]}}' }
-            [2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico`,
-                `[0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }
-            [0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States2", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }
-            [0m[34m[2024-05-22T09:08:38.824Z]  TRACE: <Link queue occupancy> { data: '{"type":"Pop","link":{"url":"http://localhost:3000/pods/00000000000000000150/comments/United","reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index","timestamp":1716368918824},"query":{"type":"project","input":{"type":"join","input":[{"termType":"Quad","value":"","subject":{"termType":"NamedNode","value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"},"object":{"termType":"Variable","value":"messageId"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"NamedNode","value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"},"object":{"termType":"Variable","value":"creator"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"},"object":{"termType":"Variable","value":"personId"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"},"object":{"termType":"Variable","value":"firstName"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"},"object":{"termType":"Variable","value":"lastName"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"}]},"variables":[{"termType":"Variable","value":"personId"},{"termType":"Variable","value":"firstName"},{"termType":"Variable","value":"lastName"}]}}' }
-            `];
-            const query = toSparql(<any>{
-                "type": "project",
-                "input": {
-                    "type": "join",
-                    "input": [
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "messageId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "personId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "firstName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "lastName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        }
-                    ]
-                },
-                "variables": [
-                    {
-                        "termType": "Variable",
-                        "value": "personId"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "firstName"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "lastName"
-                    }
-                ]
-            });
-
-            const event = {
-                eventType: EventType[EventType.Pop],
-                url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-                reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-                timestamp: 1716368918824
-            };
-
-            const newEvent = {
-                eventType: EventType[EventType.Push],
-                url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-                reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-                timestamp: 1716368918822,
-                parent: {
-                    url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                    reachability_criteria: null
-                }
-            };
-
-            const lastPushEvent = {
-                eventType: EventType[EventType.Push],
-                url: "http://localhost:3000/pods/00000000000000000150/comments/United_States2",
-                reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-                timestamp: 1716368918822,
-                parent: {
-                    url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                    reachability_criteria: null
-                }
-            };
-
-            const lastPopEvent = {
-                eventType: EventType[EventType.Pop],
-                url: "http://localhost:3000/pods/00000000000000000150/comments/United",
-                reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-                timestamp: 1716368918824
-            };
-
-            const expectedHistory = new Map(
-                [
-                    [query, { pushEvent: [newEvent, lastPushEvent], popEvent: [event, lastPopEvent] }]
-                ]
-            );
-
-            expect(await fromLogFile(data, true)).toStrictEqual(expectedHistory);
-        });
-
-        it('should return an history given data with multiple lines from multiple queries', async () => {
-            const data: any = [
-                `[0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }`,
-                `[0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#687195645211"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }`,
-                `[2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico`,
-                `[2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico`
-            ];
-
-            const query = toSparql(<any>{
-                "type": "project",
-                "input": {
-                    "type": "join",
-                    "input": [
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "messageId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "personId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "firstName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "lastName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        }
-                    ]
-                },
-                "variables": [
-                    {
-                        "termType": "Variable",
-                        "value": "personId"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "firstName"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "lastName"
-                    }
-                ]
-            });
-
-            const event = {
-                eventType: EventType[EventType.Push],
-                url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-                reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-                timestamp: 1716368918822,
-                parent: {
-                    url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                    reachability_criteria: null
-                }
-            };
-            const newQuery = toSparql(<any>{
-                "type": "project",
-                "input": {
-                    "type": "join",
-                    "input": [
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#687195645211"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "messageId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "personId"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "firstName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        },
-                        {
-                            "termType": "Quad",
-                            "value": "",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "creator"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "lastName"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            },
-                            "type": "pattern"
-                        }
-                    ]
-                },
-                "variables": [
-                    {
-                        "termType": "Variable",
-                        "value": "personId"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "firstName"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "lastName"
-                    }
-                ]
-            });
-
-            const newEvent = {
-                eventType: EventType[EventType.Push],
-                url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-                reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-                timestamp: 1716368918822,
-                parent: {
-                    url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                    reachability_criteria: null
-                }
-            };
-
-            const expectedHistory = new Map(
-                [
-                    [query, { pushEvent: [event], popEvent: [] }],
-                    [newQuery, { pushEvent: [newEvent], popEvent: [] }]
-                ]
-            );
-
-            expect(await fromLogFile(data, true)).toStrictEqual(expectedHistory);
-        });
-    });
-
 });
 
 describe('fromString', () => {
@@ -1313,144 +214,29 @@ describe('fromString', () => {
     });
 
     it('should return an history given a data with one line', () => {
-        const data = `[0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }`;
-        const query = toSparql(<any>{
-            "type": "project",
-            "input": {
-                "type": "join",
-                "input": [
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "messageId"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "personId"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "firstName"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "lastName"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    }
-                ]
-            },
-            "variables": [
-                {
-                    "termType": "Variable",
-                    "value": "personId"
-                },
-                {
-                    "termType": "Variable",
-                    "value": "firstName"
-                },
-                {
-                    "termType": "Variable",
-                    "value": "lastName"
-                }
-            ]
-        });
+        const data = `[0m[34m[2024-06-17T13:42:45.370Z]  TRACE: <Link queue occupancy> { data: '{"type":"PUSH","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card"},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":1,"pushEvent":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvent":{}}}' }`;
+        const query = `SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\n}`;
+
 
         const event = {
-            eventType: EventType[EventType.Push],
-            url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-            reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-            timestamp: 1716368918822,
-            parent: {
-                url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                reachability_criteria: null
-            }
+            url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+            producedByActor: {
+                name: "urn:comunica:default:extract-links/actors#predicates-solid",
+                metadata: {
+                    predicates: ["http://www.w3.org/ns/pim/space#storage"],
+                    matchingPredicate: "http://www.w3.org/ns/pim/space#storage",
+                    checkSubject: true
+                }
+            },
+            parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
+            timestamp: 1718631765370,
+            queue: {
+                popEvent: {},
+                pushEvent: {
+                    "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                },
+                size: 1,
+            },
         };
 
         const expectedHistory = new Map(
@@ -1464,180 +250,60 @@ describe('fromString', () => {
 
     it('should return an history given data with multiple lines', () => {
         const data = `
-        [2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico
-        [0m[34m[2024-05-22T09:08:38.824Z]  TRACE: <Link queue occupancy> { data: '{"type":"Pop","link":{"url":"http://localhost:3000/pods/00000000000000000150/comments/United_States","reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index","timestamp":1716368918824},"query":{"type":"project","input":{"type":"join","input":[{"termType":"Quad","value":"","subject":{"termType":"NamedNode","value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"},"object":{"termType":"Variable","value":"messageId"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"NamedNode","value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"},"object":{"termType":"Variable","value":"creator"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"},"object":{"termType":"Variable","value":"personId"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"},"object":{"termType":"Variable","value":"firstName"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"},"object":{"termType":"Variable","value":"lastName"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"}]},"variables":[{"termType":"Variable","value":"personId"},{"termType":"Variable","value":"firstName"},{"termType":"Variable","value":"lastName"}]}}' }
-        [2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico
-        [0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }
-        [0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States2", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }
-        [0m[34m[2024-05-22T09:08:38.824Z]  TRACE: <Link queue occupancy> { data: '{"type":"Pop","link":{"url":"http://localhost:3000/pods/00000000000000000150/comments/United","reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index","timestamp":1716368918824},"query":{"type":"project","input":{"type":"join","input":[{"termType":"Quad","value":"","subject":{"termType":"NamedNode","value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"},"object":{"termType":"Variable","value":"messageId"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"NamedNode","value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"},"object":{"termType":"Variable","value":"creator"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"},"object":{"termType":"Variable","value":"personId"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"},"object":{"termType":"Variable","value":"firstName"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"},{"termType":"Quad","value":"","subject":{"termType":"Variable","value":"creator"},"predicate":{"termType":"NamedNode","value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"},"object":{"termType":"Variable","value":"lastName"},"graph":{"termType":"DefaultGraph","value":""},"type":"pattern"}]},"variables":[{"termType":"Variable","value":"personId"},{"termType":"Variable","value":"firstName"},{"termType":"Variable","value":"lastName"}]}}' }
-        `;
-        const query = toSparql(<any>{
-            "type": "project",
-            "input": {
-                "type": "join",
-                "input": [
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "messageId"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "personId"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "firstName"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "lastName"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    }
-                ]
-            },
-            "variables": [
-                {
-                    "termType": "Variable",
-                    "value": "personId"
-                },
-                {
-                    "termType": "Variable",
-                    "value": "firstName"
-                },
-                {
-                    "termType": "Variable",
-                    "value": "lastName"
+            [2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico
+            [0m[34m[2024-06-17T13:42:45.370Z]  TRACE: <Link queue occupancy> { data: '{"type":"PUSH","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card"},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":1,"pushEvent":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvent":{}}}' }
+            [2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico
+            [0m[34m[2024-06-17T13:42:45.370Z]  TRACE: <Link queue occupancy> { data: '{"type":"POP","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":0,"pushEvent":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvent":{"urn:comunica:default:extract-links/actors#predicates-solid":1}}}' }
+            `;
+        const query = `SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\n}`;
+
+
+        const pushEvent = {
+            url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+            producedByActor: {
+                name: "urn:comunica:default:extract-links/actors#predicates-solid",
+                metadata: {
+                    predicates: ["http://www.w3.org/ns/pim/space#storage"],
+                    matchingPredicate: "http://www.w3.org/ns/pim/space#storage",
+                    checkSubject: true
                 }
-            ]
-        });
-
-        const event = {
-            eventType: EventType[EventType.Pop],
-            url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-            reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-            timestamp: 1716368918824
+            },
+            parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
+            timestamp: 1718631765370,
+            queue: {
+                popEvent: {},
+                pushEvent: {
+                    "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                },
+                size: 1,
+            },
         };
 
-        const newEvent = {
-            eventType: EventType[EventType.Push],
-            url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-            reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-            timestamp: 1716368918822,
-            parent: {
-                url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                reachability_criteria: null
-            }
-        };
-
-        const lastPushEvent = {
-            eventType: EventType[EventType.Push],
-            url: "http://localhost:3000/pods/00000000000000000150/comments/United_States2",
-            reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-            timestamp: 1716368918822,
-            parent: {
-                url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                reachability_criteria: null
-            }
-        };
-
-        const lastPopEvent = {
-            eventType: EventType[EventType.Pop],
-            url: "http://localhost:3000/pods/00000000000000000150/comments/United",
-            reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-            timestamp: 1716368918824
+        const popEvent = {
+            url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+            producedByActor: {
+                name: "urn:comunica:default:extract-links/actors#predicates-solid",
+                metadata: {
+                    predicates: ["http://www.w3.org/ns/pim/space#storage"],
+                    matchingPredicate: "http://www.w3.org/ns/pim/space#storage",
+                    checkSubject: true
+                }
+            },
+            queue: {
+                popEvent: {
+                    "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                },
+                pushEvent: {
+                    "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                },
+                size: 0,
+            },
+            timestamp: 1718631765370
         };
 
         const expectedHistory = new Map(
             [
-                [query, { pushEvent: [newEvent, lastPushEvent], popEvent: [event, lastPopEvent] }]
+                [query, { pushEvent: [pushEvent], popEvent: [popEvent] }]
             ]
         );
 
@@ -1645,286 +311,61 @@ describe('fromString', () => {
     });
 
     it('should return an history given data with multiple lines from multiple queries', () => {
-        const data = `
-        [0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }
-        [0m[34m[2024-05-22T09:08:38.822Z]  TRACE: <Link queue occupancy> { data: '{ "type":"Push", "link": { "url":"http://localhost:3000/pods/00000000000000000150/comments/United_States", "reachability_criteria":"urn:comunica:default:extract-links/actors#solid-shape-index", "timestamp":1716368918822, "parent": { "url":"http://localhost:3000/pods/00000000000000000150/comments/Mexico", "reachability_criteria":null} }, "query": { "type":"project", "input": { "type":"join", "input": [{ "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#687195645211"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"messageId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"NamedNode", "value":"http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"}, "object": { "termType":"Variable", "value":"creator"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"}, "object": { "termType":"Variable", "value":"personId"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"}, "object": { "termType":"Variable", "value":"firstName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}, { "termType":"Quad", "value":"", "subject": { "termType":"Variable", "value":"creator"}, "predicate": { "termType":"NamedNode", "value":"http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"}, "object": { "termType":"Variable", "value":"lastName"}, "graph": { "termType":"DefaultGraph", "value":""}, "type":"pattern"}] }, "variables": [{ "termType":"Variable", "value":"personId"}, { "termType":"Variable", "value":"firstName"}, { "termType":"Variable", "value":"lastName"}] } }' }
-        `;
+        const line = `[0m[34m[2024-06-17T13:42:45.370Z]  TRACE: <Link queue occupancy> { data: '{"type":"PUSH","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card"},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":1,"pushEvent":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvent":{}}}' }`;
+        const newLine = `[0m[34m[2024-06-17T13:42:45.370Z]  TRACE: <Link queue occupancy> { data: '{"type":"PUSH","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card"},"query":"SELECT ?messageId1 ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId1.\\n}","queue":{"size":1,"pushEvent":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvent":{}}}' }`;
 
-        const query = toSparql(<any>{
-            "type": "project",
-            "input": {
-                "type": "join",
-                "input": [
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "messageId"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "personId"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "firstName"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "lastName"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    }
-                ]
-            },
-            "variables": [
-                {
-                    "termType": "Variable",
-                    "value": "personId"
-                },
-                {
-                    "termType": "Variable",
-                    "value": "firstName"
-                },
-                {
-                    "termType": "Variable",
-                    "value": "lastName"
-                }
-            ]
-        });
+        const data: string = [
+            `[2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico`,
+            line,
+            `[2024-05-22T09:08:38.540Z]  INFO: Requesting http://localhost:3000/pods/00000000000000000150/comments/Mexico`,
+            newLine
+        ].join("\n");
+
+        const query = `SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\n}`;
 
         const event = {
-            eventType: EventType[EventType.Push],
-            url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-            reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-            timestamp: 1716368918822,
-            parent: {
-                url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                reachability_criteria: null
-            }
-        };
-        const newQuery = toSparql(<any>{
-            "type": "project",
-            "input": {
-                "type": "join",
-                "input": [
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#687195645211"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "messageId"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/pods/00000000000000000150/comments/Mexico#68719564521"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "personId"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/firstName"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "firstName"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    },
-                    {
-                        "termType": "Quad",
-                        "value": "",
-                        "subject": {
-                            "termType": "Variable",
-                            "value": "creator"
-                        },
-                        "predicate": {
-                            "termType": "NamedNode",
-                            "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/lastName"
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "lastName"
-                        },
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "type": "pattern"
-                    }
-                ]
-            },
-            "variables": [
-                {
-                    "termType": "Variable",
-                    "value": "personId"
-                },
-                {
-                    "termType": "Variable",
-                    "value": "firstName"
-                },
-                {
-                    "termType": "Variable",
-                    "value": "lastName"
+            url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+            producedByActor: {
+                name: "urn:comunica:default:extract-links/actors#predicates-solid",
+                metadata: {
+                    predicates: ["http://www.w3.org/ns/pim/space#storage"],
+                    matchingPredicate: "http://www.w3.org/ns/pim/space#storage",
+                    checkSubject: true
                 }
-            ]
-        });
+            },
+            parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
+            timestamp: 1718631765370,
+            queue: {
+                popEvent: {},
+                pushEvent: {
+                    "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                },
+                size: 1,
+            },
+        };
+
+        const newQuery = `SELECT ?messageId1 ?messageCreationDate ?messageContent WHERE {\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId1.\n}`;
+
 
         const newEvent = {
-            eventType: EventType[EventType.Push],
-            url: "http://localhost:3000/pods/00000000000000000150/comments/United_States",
-            reachability_criteria: "urn:comunica:default:extract-links/actors#solid-shape-index",
-            timestamp: 1716368918822,
-            parent: {
-                url: "http://localhost:3000/pods/00000000000000000150/comments/Mexico",
-                reachability_criteria: null
-            }
+            url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+            producedByActor: {
+                name: "urn:comunica:default:extract-links/actors#predicates-solid",
+                metadata: {
+                    predicates: ["http://www.w3.org/ns/pim/space#storage"],
+                    matchingPredicate: "http://www.w3.org/ns/pim/space#storage",
+                    checkSubject: true
+                }
+            },
+            parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
+            timestamp: 1718631765370,
+            queue: {
+                popEvent: {},
+                pushEvent: {
+                    "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+                },
+                size: 1,
+            },
         };
 
         const expectedHistory = new Map(

@@ -1,5 +1,4 @@
 import { writeFile } from 'node:fs/promises'
-import { Algebra, toSparql } from "sparqlalgebrajs";
 
 export const REGEX_LINK_QUEUE_EVENT = /TRACE: <Link queue occupancy> { data: '(?<jsonEvent>.*)' }/
 
@@ -12,21 +11,19 @@ export function parseLine(line: string, history: HistoryByQuery): void {
     const groups = REGEX_LINK_QUEUE_EVENT.exec(line)?.groups;
     if (groups !== undefined) {
         const linkQueueEvent: ILinkQueueEvent = JSON.parse(groups['jsonEvent']);
-        const query = toSparql((linkQueueEvent.query as any));
+        const query = linkQueueEvent.query;
         let currentHistory = history.get(query);
         if (currentHistory === undefined) {
             history.set(query, { pushEvent: [], popEvent: [] });
             currentHistory = history.get(query)!;
         }
         switch (linkQueueEvent.type) {
-            case EventType[EventType.Push]:
-                linkQueueEvent.link.eventType = EventType[EventType.Push];
-                currentHistory.pushEvent.push({...linkQueueEvent.link, queueStatistics:linkQueueEvent.queueStatistics});
+            case EventType[EventType.PUSH]:
+                currentHistory.pushEvent.push({...linkQueueEvent.link, queue:linkQueueEvent.queue});
                 break;
 
-            case EventType[EventType.Pop]:
-                linkQueueEvent.link.eventType = EventType[EventType.Pop];
-                currentHistory.popEvent.push({...linkQueueEvent.link, queueStatistics:linkQueueEvent.queueStatistics});
+            case EventType[EventType.POP]:
+                currentHistory.popEvent.push({...linkQueueEvent.link, queue:linkQueueEvent.queue});
                 break;
         }
     }
@@ -37,11 +34,11 @@ export function parseLine(line: string, history: HistoryByQuery): void {
  * @param {HistoryByQuery} history 
  * @param {boolean} forceNodeJs 
  */
-export async function historyByQueryToFile(path: string, history: HistoryByQuery, forceNodeJs: boolean = false): Promise<void> {
+export async function historyByQueryToFile(path: string, history: HistoryByQuery, forceNodeJs = false): Promise<void> {
     await writeToFile(path, Object.fromEntries(history), forceNodeJs);
 }
 
-async function writeToFile(path: string, data: Object, forceNodeJs: boolean = false): Promise<void> {
+async function writeToFile(path: string, data: unknown, forceNodeJs = false): Promise<void> {
     const stringObject = JSON.stringify(data, null, 2);
     if (Bun?.write === undefined || forceNodeJs) {
         await writeFile(path, stringObject);
@@ -54,8 +51,8 @@ async function writeToFile(path: string, data: Object, forceNodeJs: boolean = fa
  * Event type of the link queue
  */
 export enum EventType {
-    Push,
-    Pop,
+    PUSH,
+    POP,
 }
 
 export type HistoryByQuery = Map<string, IHistory>;
@@ -64,46 +61,17 @@ export type HistoryByQuery = Map<string, IHistory>;
  * Timeline of the link queue divided into pushed and popped
  */
 export interface IHistory {
-    pushEvent: IHistoryEvent[];
-    popEvent: IHistoryEvent[];
+    pushEvent: object[];
+    popEvent: object[];
 }
 
-export interface IHistoryEvent extends IURLStatistic {
-    queueStatistics: IQueueStatistics;
-}
-/**
- * Information about an URL
- */
-export interface IURLStatistic {
-    eventType?: string;
-    url: string;
-    reachability_criteria: string | null;
-    reachability_criteria_dynamic_info?: object;
-    timestamp?: number;
-    parent?: IURLStatistic;
-}
 /**
 * A link queue event
 */
 export interface ILinkQueueEvent {
     type: string;
-    link: IURLStatistic;
-    query: Algebra.Operation;
-    queueStatistics: IQueueStatistics;
+    link: object;
+    query: string;
+    queue: object;
 }
 
-/**
- * Ratio of the reachability criteria of the link in the queue
- */
-interface IReachabilityRatio {
-    pushEvent: Record<string, number>;
-    popEvent: Record<string, number>;
-}
-
-/**
- * Statistic of the link queue
- */
-interface IQueueStatistics {
-    size: number;
-    reachabilityRatio: IReachabilityRatio;
-}

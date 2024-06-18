@@ -39,7 +39,7 @@ export function fromString(data: string): HistoryByQuery {
     return history;
 }
 
-async function getStream(data: string, forceNodeJs: boolean = false): Promise<ReadableStream<any> | ReadStream | Readable> {
+async function getStream(data: string, forceNodeJs = false): Promise<ReadableStream<any> | ReadStream | Readable> {
     if (Bun?.file === undefined || forceNodeJs) {
         return createReadStream(data);
     } else {
