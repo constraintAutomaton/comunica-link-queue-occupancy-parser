@@ -14,16 +14,16 @@ export function parseLine(line: string, history: HistoryByQuery): void {
         const query = linkQueueEvent.query;
         let currentHistory = history.get(query);
         if (currentHistory === undefined) {
-            history.set(query, { pushEvent: [], popEvent: [] });
+            history.set(query, { pushEvents: [], popEvents: [] });
             currentHistory = history.get(query)!;
         }
         switch (linkQueueEvent.type) {
             case EventType[EventType.PUSH]:
-                currentHistory.pushEvent.push({...linkQueueEvent.link, queue:linkQueueEvent.queue});
+                currentHistory.pushEvents.push({...linkQueueEvent.link, queue:linkQueueEvent.queue});
                 break;
 
             case EventType[EventType.POP]:
-                currentHistory.popEvent.push({...linkQueueEvent.link, queue:linkQueueEvent.queue});
+                currentHistory.popEvents.push({...linkQueueEvent.link, queue:linkQueueEvent.queue});
                 break;
         }
     }
@@ -61,8 +61,8 @@ export type HistoryByQuery = Map<string, IHistory>;
  * Timeline of the link queue divided into pushed and popped
  */
 export interface IHistory {
-    pushEvent: object[];
-    popEvent: object[];
+    pushEvents: object[];
+    popEvents: object[];
 }
 
 /**

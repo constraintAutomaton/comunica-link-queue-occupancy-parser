@@ -35,7 +35,7 @@ Options:
 ```json
 {
     "SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}": {
-        "pushEvent": [
+        "pushEvents": [
             {
                 "url": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
                 "producedByActor": {
@@ -52,10 +52,10 @@ Options:
                 "parent": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
                 "queue": {
                     "size": 1,
-                    "pushEvent": {
+                    "pushEvents": {
                         "urn:comunica:default:extract-links/actors#predicates-solid": 1
                     },
-                    "popEvent": {}
+                    "popEvents": {}
                 }
             },
             {
@@ -74,11 +74,11 @@ Options:
                 "parent": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
                 "queue": {
                     "size": 1,
-                    "pushEvent": {
+                    "pushEvents": {
                         "urn:comunica:default:extract-links/actors#predicates-solid": 1,
                         "urn:comunica:default:extract-links/actors#predicates-ldp": 1
                     },
-                    "popEvent": {
+                    "popEvents": {
                         "urn:comunica:default:extract-links/actors#predicates-solid": 1
                     }
                 }
@@ -102,12 +102,12 @@ Options:
                 "parent": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/posts/2011-11-17",
                 "queue": {
                   "size": 1,
-                  "pushEvent": {
+                  "pushEvents": {
                     "urn:comunica:default:extract-links/actors#predicates-solid": 1,
                     "urn:comunica:default:extract-links/actors#predicates-ldp": 91,
                     "urn:comunica:default:extract-links/actors#predicates-common": 32
                   },
-                  "popEvent": {
+                  "popEvents": {
                     "urn:comunica:default:extract-links/actors#predicates-solid": 1,
                     "urn:comunica:default:extract-links/actors#predicates-ldp": 91,
                     "urn:comunica:default:extract-links/actors#predicates-common": 31
@@ -115,7 +115,7 @@ Options:
                 }
               }
         ],
-        "popEvent": [
+        "popEvents": [
             {
                 "url": "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
                 "producedByActor": {
@@ -131,10 +131,10 @@ Options:
                 "timestamp": 1718631765370,
                 "queue": {
                     "size": 0,
-                    "pushEvent": {
+                    "pushEvents": {
                         "urn:comunica:default:extract-links/actors#predicates-solid": 1
                     },
-                    "popEvent": {
+                    "popEvents": {
                         "urn:comunica:default:extract-links/actors#predicates-solid": 1
                     }
                 }
@@ -154,11 +154,11 @@ Options:
                 "timestamp": 1718631765473,
                 "queue": {
                     "size": 4,
-                    "pushEvent": {
+                    "pushEvents": {
                         "urn:comunica:default:extract-links/actors#predicates-solid": 1,
                         "urn:comunica:default:extract-links/actors#predicates-ldp": 5
                     },
-                    "popEvent": {
+                    "popEvents": {
                         "urn:comunica:default:extract-links/actors#predicates-solid": 1,
                         "urn:comunica:default:extract-links/actors#predicates-ldp": 1
                     }
@@ -182,12 +182,12 @@ Options:
                 "timestamp": 1718631766440,
                 "queue": {
                   "size": 0,
-                  "pushEvent": {
+                  "pushEvents": {
                     "urn:comunica:default:extract-links/actors#predicates-solid": 1,
                     "urn:comunica:default:extract-links/actors#predicates-ldp": 91,
                     "urn:comunica:default:extract-links/actors#predicates-common": 32
                   },
-                  "popEvent": {
+                  "popEvents": {
                     "urn:comunica:default:extract-links/actors#predicates-solid": 1,
                     "urn:comunica:default:extract-links/actors#predicates-ldp": 91,
                     "urn:comunica:default:extract-links/actors#predicates-common": 32
