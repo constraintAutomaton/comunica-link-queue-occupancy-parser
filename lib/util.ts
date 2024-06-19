@@ -18,11 +18,11 @@ export function parseLine(line: string, history: HistoryByQuery): void {
             currentHistory = history.get(query)!;
         }
         switch (linkQueueEvent.type) {
-            case EventType[EventType.PUSH]:
+            case 'pushEvent':
                 currentHistory.pushEvents.push({...linkQueueEvent.link, queue:linkQueueEvent.queue});
                 break;
 
-            case EventType[EventType.POP]:
+            case 'popEvent':
                 currentHistory.popEvents.push({...linkQueueEvent.link, queue:linkQueueEvent.queue});
                 break;
         }
@@ -47,13 +47,7 @@ async function writeToFile(path: string, data: unknown, forceNodeJs = false): Pr
     }
 }
 
-/**
- * Event type of the link queue
- */
-export enum EventType {
-    PUSH,
-    POP,
-}
+
 
 export type HistoryByQuery = Map<string, IHistory>;
 
