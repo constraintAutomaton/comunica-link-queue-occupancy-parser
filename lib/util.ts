@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises'
 
-export const REGEX_LINK_QUEUE_EVENT = /TRACE: <Link queue occupancy> { data: '(?<jsonEvent>.*)' }/
+export const REGEX_LINK_QUEUE_EVENT = /TRACE: Link queue changed { data: '(?<jsonEvent>.*)' }/
 
 /**
  * Parse a log line into an history of link queue event
