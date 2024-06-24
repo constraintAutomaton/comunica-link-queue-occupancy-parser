@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises'
 
-export const REGEX_LINK_QUEUE_EVENT = /TRACE: Link queue changed { data: '(?<jsonEvent>.*)' }/
+export const REGEX_LINK_QUEUE_EVENT = /.*?(?<jsonEvent>{.+?"Link queue changed".*})/g;
 
 /**
  * Parse a log line into an history of link queue event
@@ -8,9 +8,9 @@ export const REGEX_LINK_QUEUE_EVENT = /TRACE: Link queue changed { data: '(?<jso
  * @param {HistoryByQuery} history - the history of the link queues
  */
 export function parseLine(line: string, history: HistoryByQuery): void {
-    const groups = REGEX_LINK_QUEUE_EVENT.exec(line)?.groups;
-    if (groups !== undefined) {
-        const linkQueueEvent: ILinkQueueEvent = JSON.parse(groups['jsonEvent']);
+    const regexResults = REGEX_LINK_QUEUE_EVENT.exec(line);
+    if (regexResults !== null) {
+        const linkQueueEvent: ILinkQueueEvent = JSON.parse(regexResults[1])["data"];
         const query = linkQueueEvent.query;
         let currentHistory = history.get(query);
         if (currentHistory === undefined) {
