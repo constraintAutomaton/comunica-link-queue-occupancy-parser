@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises'
 
-export const REGEX_LINK_QUEUE_EVENT = /.*?(?<jsonEvent>{.+?"Link queue changed".*})/g;
+export const REGEX_LINK_QUEUE_EVENT = /.*?(?<jsonEvent>{.+?"Link queue changed".*})/;
 
 /**
  * Parse a log line into an history of link queue event
@@ -9,6 +9,7 @@ export const REGEX_LINK_QUEUE_EVENT = /.*?(?<jsonEvent>{.+?"Link queue changed".
  */
 export function parseLine(line: string, history: HistoryByQuery): void {
     const regexResults = REGEX_LINK_QUEUE_EVENT.exec(line);
+    
     if (regexResults !== null) {
         const linkQueueEvent: ILinkQueueEvent = JSON.parse(regexResults[1])["data"];
         const query = linkQueueEvent.query;
@@ -19,11 +20,11 @@ export function parseLine(line: string, history: HistoryByQuery): void {
         }
         switch (linkQueueEvent.type) {
             case 'pushEvent':
-                currentHistory.pushEvents.push({...linkQueueEvent.link, queue:linkQueueEvent.queue});
+                currentHistory.pushEvents.push({ ...linkQueueEvent.link, queue: linkQueueEvent.queue });
                 break;
 
             case 'popEvent':
-                currentHistory.popEvents.push({...linkQueueEvent.link, queue:linkQueueEvent.queue});
+                currentHistory.popEvents.push({ ...linkQueueEvent.link, queue: linkQueueEvent.queue });
                 break;
         }
     }

@@ -1,5 +1,5 @@
 import { describe, expect, it, jest, beforeEach, mock } from "bun:test";
-import {  HistoryByQuery, historyByQueryToFile, parseLine } from '../lib/util';
+import { HistoryByQuery, historyByQueryToFile, parseLine } from '../lib/util';
 
 if (Bun !== undefined) {
   Bun.write = jest.fn();
@@ -26,30 +26,35 @@ describe('util', () => {
 
     it('should add a push event', () => {
       const history: HistoryByQuery = new Map();
-      const line = `[0m[34m[2024-06-17T13:42:45.370Z]  TRACE: Link queue changed { data: '{"type":"pushEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card"},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":1,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvents":{}}}' }`;
+      const line = `{"name":"comunica","streamProviders":[{"level":"trace"}],"hostname":"bryanelliott-latitude5530","pid":23430,"level":10,"data":{"type":"pushEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/comments/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-ldp","metadata":{"predicates":["http://www.w3.org/ns/ldp#contains"],"matchingPredicate":"http://www.w3.org/ns/ldp#contains","checkSubject":true}},"timestamp":2200.1834,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/"},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.   ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId. }","queue":{"size":2,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1,"urn:comunica:default:extract-links/actors#predicates-ldp":2},"popEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1}}},"msg":"Link queue changed","time":"2024-06-24T07:28:58.073Z","v":0}`;
 
       parseLine(line, history);
-      const query = `SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\n}`;
+      const query = "SELECT ?messageId ?messageCreationDate ?messageContent WHERE {   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.   ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId. }";
 
       const event = {
-        url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+        url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/comments/",
         producedByActor: {
-          name: "urn:comunica:default:extract-links/actors#predicates-solid",
+          name: "urn:comunica:default:extract-links/actors#predicates-ldp",
           metadata: {
-            predicates: ["http://www.w3.org/ns/pim/space#storage"],
-            matchingPredicate: "http://www.w3.org/ns/pim/space#storage",
+            predicates: [
+              "http://www.w3.org/ns/ldp#contains"
+            ],
+            matchingPredicate: "http://www.w3.org/ns/ldp#contains",
             checkSubject: true
           }
         },
-        parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
-        timestamp: 1718631765370,
+        timestamp: 2200.1834,
+        parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
         queue: {
-          popEvents: {},
+          size: 2,
           pushEvents: {
             "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+            "urn:comunica:default:extract-links/actors#predicates-ldp": 2
           },
-          size: 1,
-        },
+          popEvents: {
+            "urn:comunica:default:extract-links/actors#predicates-solid": 1
+          }
+        }
       };
 
       const expectedHistory = new Map(
@@ -62,10 +67,10 @@ describe('util', () => {
 
     it('should add a pop event', () => {
       const history: HistoryByQuery = new Map();
-      const line = `[0m[34m[2024-06-17T13:42:45.370Z]  TRACE: Link queue changed { data: '{"type":"popEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":0,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1}}}' }`;
+      const line = `{"name":"comunica","streamProviders":[{"level":"trace"}],"hostname":"bryanelliott-latitude5530","pid":23430,"level":10,"data":{"type":"popEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":2144.988653},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.   ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId. }","queue":{"size":0,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1}}},"msg":"Link queue changed","time":"2024-06-24T07:28:58.018Z","v":0}`;
 
       parseLine(line, history);
-      const query = `SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\n}`;
+      const query = "SELECT ?messageId ?messageCreationDate ?messageContent WHERE {   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.   ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId. }";
 
       const event = {
         url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
@@ -86,7 +91,7 @@ describe('util', () => {
           },
           size: 0,
         },
-        timestamp: 1718631765370
+        timestamp: 2144.988653
       };
 
       const expectedHistory = new Map(
@@ -99,42 +104,46 @@ describe('util', () => {
 
     it('should add multiple event', () => {
       const history: HistoryByQuery = new Map();
-      const line = `[0m[34m[2024-06-17T13:42:45.370Z]  TRACE: Link queue changed { data: '{"type":"popEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":0,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1}}}' }`;
+      const line = `{"name":"comunica","streamProviders":[{"level":"trace"}],"hostname":"bryanelliott-latitude5530","pid":23430,"level":10,"data":{"type":"pushEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/comments/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-ldp","metadata":{"predicates":["http://www.w3.org/ns/ldp#contains"],"matchingPredicate":"http://www.w3.org/ns/ldp#contains","checkSubject":true}},"timestamp":2200.1834,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/"},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.   ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId. }","queue":{"size":2,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1,"urn:comunica:default:extract-links/actors#predicates-ldp":2},"popEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1}}},"msg":"Link queue changed","time":"2024-06-24T07:28:58.073Z","v":0}`;
 
       parseLine(line, history);
-      const query = `SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\n}`;
+      const query = "SELECT ?messageId ?messageCreationDate ?messageContent WHERE {   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.   ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId. }";
 
       const event = {
-        url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+        url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/comments/",
         producedByActor: {
-          name: "urn:comunica:default:extract-links/actors#predicates-solid",
+          name: "urn:comunica:default:extract-links/actors#predicates-ldp",
           metadata: {
-            predicates: ["http://www.w3.org/ns/pim/space#storage"],
-            matchingPredicate: "http://www.w3.org/ns/pim/space#storage",
+            predicates: [
+              "http://www.w3.org/ns/ldp#contains"
+            ],
+            matchingPredicate: "http://www.w3.org/ns/ldp#contains",
             checkSubject: true
           }
         },
+        timestamp: 2200.1834,
+        parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
         queue: {
-          popEvents: {
-            "urn:comunica:default:extract-links/actors#predicates-solid": 1,
-          },
+          size: 2,
           pushEvents: {
             "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+            "urn:comunica:default:extract-links/actors#predicates-ldp": 2
           },
-          size: 0,
-        },
-        timestamp: 1718631765370
+          popEvents: {
+            "urn:comunica:default:extract-links/actors#predicates-solid": 1
+          }
+        }
       };
 
       const expectedHistory = new Map(
         [
-          [query, { pushEvents: [], popEvents: [event] }]
+          [query, { pushEvents: [event], popEvents: [] }]
         ]
       );
       expect(history).toStrictEqual(expectedHistory);
 
 
-      const newLine = `[0m[34m[2024-06-17T13:42:45.370Z]  TRACE: Link queue changed { data: '{"type":"pushEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card"},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":1,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvents":{}}}' }`;
+      const newLine = `{"name":"comunica","streamProviders":[{"level":"trace"}],"hostname":"bryanelliott-latitude5530","pid":23430,"level":10,"data":{"type":"popEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":2144.988653},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.   ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId. }","queue":{"size":0,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1}}},"msg":"Link queue changed","time":"2024-06-24T07:28:58.018Z","v":0}`;
 
       parseLine(newLine, history);
 
@@ -149,28 +158,29 @@ describe('util', () => {
           }
         },
         queue: {
-          popEvents: {},
+          popEvents: {
+            "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+          },
           pushEvents: {
             "urn:comunica:default:extract-links/actors#predicates-solid": 1,
           },
-          size: 1,
+          size: 0,
         },
-        parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
-        timestamp: 1718631765370
+        timestamp: 2144.988653
       };
 
       const newExpectedHistory = new Map(
         [
-          [query, { pushEvents: [newEvent], popEvents: [event] }]
+          [query, { pushEvents: [event], popEvents: [newEvent] }]
         ]
       )
       expect(history).toStrictEqual(newExpectedHistory);
 
-      const lastLinePush = `[0m[34m[2024-06-17T13:42:45.473Z]  TRACE: Link queue changed { data: '{"type":"pushEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-ldp","metadata":{"predicates":["http://www.w3.org/ns/ldp#contains"],"matchingPredicate":"http://www.w3.org/ns/ldp#contains","checkSubject":true}},"timestamp":1718631765472,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/"},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":1,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1,"urn:comunica:default:extract-links/actors#predicates-ldp":1},"popEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1}}}' }`;
+      const lastLinePush = `{"name":"comunica","streamProviders":[{"level":"trace"}],"hostname":"bryanelliott-latitude5530","pid":23430,"level":10,"data":{"type":"pushEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/comments/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-ldp","metadata":{"predicates":["http://www.w3.org/ns/ldp#contains"],"matchingPredicate":"http://www.w3.org/ns/ldp#contains","checkSubject":true}},"timestamp":2200.1834,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/"},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.   ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId. }","queue":{"size":2,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1,"urn:comunica:default:extract-links/actors#predicates-ldp":2},"popEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1}}},"msg":"Link queue changed","time":"2024-06-24T07:28:58.073Z","v":0}`;
 
       parseLine(lastLinePush, history);
       const lastPushEvent = {
-        url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/",
+        url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/comments/",
         producedByActor: {
           name: "urn:comunica:default:extract-links/actors#predicates-ldp",
           metadata: {
@@ -180,28 +190,28 @@ describe('util', () => {
           }
         },
         parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
-        timestamp: 1718631765472,
+        timestamp: 2200.1834,
         queue: {
-          popEvents: {
-            "urn:comunica:default:extract-links/actors#predicates-solid": 1,
-          },
+          size: 2,
           pushEvents: {
-            "urn:comunica:default:extract-links/actors#predicates-ldp": 1,
             "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+            "urn:comunica:default:extract-links/actors#predicates-ldp": 2
           },
-          size: 1,
+          popEvents: {
+            "urn:comunica:default:extract-links/actors#predicates-solid": 1
+          }
         }
       };
 
       const newExpectedHistoryWithLastPushEvent = new Map(
         [
-          [query, { pushEvents: [newEvent, lastPushEvent], popEvents: [event] }]
+          [query, { pushEvents: [event, lastPushEvent], popEvents: [newEvent] }]
         ]
       );
       expect(history).toStrictEqual(newExpectedHistoryWithLastPushEvent);
 
 
-      const lastPopLine = `[0m[34m[2024-06-17T13:42:45.473Z]  TRACE: Link queue changed { data: '{"type":"popEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-ldp","metadata":{"predicates":["http://www.w3.org/ns/ldp#contains"],"matchingPredicate":"http://www.w3.org/ns/ldp#contains","checkSubject":true}},"timestamp":1718631765473},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":4,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1,"urn:comunica:default:extract-links/actors#predicates-ldp":5},"popEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1,"urn:comunica:default:extract-links/actors#predicates-ldp":1}}}' }`;
+      const lastPopLine = `{"name":"comunica","streamProviders":[{"level":"trace"}],"hostname":"bryanelliott-latitude5530","pid":23430,"level":10,"data":{"type":"popEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-ldp","metadata":{"predicates":["http://www.w3.org/ns/ldp#contains"],"matchingPredicate":"http://www.w3.org/ns/ldp#contains","checkSubject":true}},"timestamp":2200.305014},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.   ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId. }","queue":{"size":4,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1,"urn:comunica:default:extract-links/actors#predicates-ldp":5},"popEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1,"urn:comunica:default:extract-links/actors#predicates-ldp":1}}},"msg":"Link queue changed","time":"2024-06-24T07:28:58.073Z","v":0}`;
 
       parseLine(lastPopLine, history);
 
@@ -215,7 +225,7 @@ describe('util', () => {
             checkSubject: true
           }
         },
-        timestamp: 1718631765473,
+        timestamp: 2200.305014,
         queue: {
           popEvents: {
             "urn:comunica:default:extract-links/actors#predicates-ldp": 1,
@@ -231,7 +241,7 @@ describe('util', () => {
 
       const newExpectedHistoryWithLastPopEvent = new Map(
         [
-          [query, { pushEvents: [newEvent, lastPushEvent], popEvents: [event, lastPopEvent] }]
+          [query, { pushEvents: [event, lastPushEvent], popEvents: [newEvent, lastPopEvent] }]
         ]
       );
       expect(history).toStrictEqual(newExpectedHistoryWithLastPopEvent);
@@ -240,66 +250,75 @@ describe('util', () => {
     });
 
     it('should add multiple queries', () => {
-
       const history: HistoryByQuery = new Map();
-      const line = `[0m[34m[2024-06-17T13:42:45.370Z]  TRACE: Link queue changed { data: '{"type":"pushEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card"},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\\n}","queue":{"size":1,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvents":{}}}' }`;
+
+      const line = `{"name":"comunica","streamProviders":[{"level":"trace"}],"hostname":"bryanelliott-latitude5530","pid":23430,"level":10,"data":{"type":"pushEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/comments/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-ldp","metadata":{"predicates":["http://www.w3.org/ns/ldp#contains"],"matchingPredicate":"http://www.w3.org/ns/ldp#contains","checkSubject":true}},"timestamp":2200.1834,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/"},"query":"SELECT ?messageId ?messageCreationDate ?messageContent WHERE {   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.   ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId. }","queue":{"size":2,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1,"urn:comunica:default:extract-links/actors#predicates-ldp":2},"popEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1}}},"msg":"Link queue changed","time":"2024-06-24T07:28:58.073Z","v":0}`;
 
       parseLine(line, history);
-      const query = `SELECT ?messageId ?messageCreationDate ?messageContent WHERE {\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId.\n}`;
-
+      const query = "SELECT ?messageId ?messageCreationDate ?messageContent WHERE {   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.   ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId. }";
 
       const event = {
-        url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+        url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/comments/",
         producedByActor: {
-          name: "urn:comunica:default:extract-links/actors#predicates-solid",
+          name: "urn:comunica:default:extract-links/actors#predicates-ldp",
           metadata: {
-            predicates: ["http://www.w3.org/ns/pim/space#storage"],
-            matchingPredicate: "http://www.w3.org/ns/pim/space#storage",
+            predicates: [
+              "http://www.w3.org/ns/ldp#contains"
+            ],
+            matchingPredicate: "http://www.w3.org/ns/ldp#contains",
             checkSubject: true
           }
         },
-        parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
-        timestamp: 1718631765370,
+        timestamp: 2200.1834,
+        parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
         queue: {
-          popEvents: {},
+          size: 2,
           pushEvents: {
             "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+            "urn:comunica:default:extract-links/actors#predicates-ldp": 2
           },
-          size: 1,
-        },
+          popEvents: {
+            "urn:comunica:default:extract-links/actors#predicates-solid": 1
+          }
+        }
       };
 
       const expectedHistory = new Map(
         [
           [query, { pushEvents: [event], popEvents: [] }]
         ]
-      )
+      );
       expect(history).toStrictEqual(expectedHistory);
 
-      const newLine = `[0m[34m[2024-06-17T13:42:45.370Z]  TRACE: Link queue changed { data: '{"type":"pushEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-solid","metadata":{"predicates":["http://www.w3.org/ns/pim/space#storage"],"matchingPredicate":"http://www.w3.org/ns/pim/space#storage","checkSubject":true}},"timestamp":1718631765370,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card"},"query":"SELECT ?messageId1 ?messageCreationDate ?messageContent WHERE {\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId1.\\n}","queue":{"size":1,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1},"popEvents":{}}}' }`;
+      const newLine = `{"name":"comunica","streamProviders":[{"level":"trace"}],"hostname":"bryanelliott-latitude5530","pid":23430,"level":10,"data":{"type":"pushEvent","link":{"url":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/comments/","producedByActor":{"name":"urn:comunica:default:extract-links/actors#predicates-ldp","metadata":{"predicates":["http://www.w3.org/ns/ldp#contains"],"matchingPredicate":"http://www.w3.org/ns/ldp#contains","checkSubject":true}},"timestamp":2200.1834,"parent":"https://solidbench.linkeddatafragments.org/pods/00000000000000000933/"},"query":"SELECT ?messageId1 ?messageCreationDate ?messageContent WHERE {   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.   ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId. }","queue":{"size":2,"pushEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1,"urn:comunica:default:extract-links/actors#predicates-ldp":2},"popEvents":{"urn:comunica:default:extract-links/actors#predicates-solid":1}}},"msg":"Link queue changed","time":"2024-06-24T07:28:58.073Z","v":0}`;
 
       parseLine(newLine, history);
-      const newQuery = `SELECT ?messageId1 ?messageCreationDate ?messageContent WHERE {\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.\n  ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.\n  ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId1.\n}`;
+      const newQuery = "SELECT ?messageId1 ?messageCreationDate ?messageContent WHERE {   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/hasCreator> <https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card#me>.   ?message <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Post>.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/content> ?messageContent.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/creationDate> ?messageCreationDate.   ?message <https://solidbench.linkeddatafragments.org/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/id> ?messageId. }";
 
       const newEvent = {
-        url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
+        url: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/comments/",
         producedByActor: {
-          name: "urn:comunica:default:extract-links/actors#predicates-solid",
+          name: "urn:comunica:default:extract-links/actors#predicates-ldp",
           metadata: {
-            predicates: ["http://www.w3.org/ns/pim/space#storage"],
-            matchingPredicate: "http://www.w3.org/ns/pim/space#storage",
+            predicates: [
+              "http://www.w3.org/ns/ldp#contains"
+            ],
+            matchingPredicate: "http://www.w3.org/ns/ldp#contains",
             checkSubject: true
           }
         },
-        parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/profile/card",
-        timestamp: 1718631765370,
+        timestamp: 2200.1834,
+        parent: "https://solidbench.linkeddatafragments.org/pods/00000000000000000933/",
         queue: {
-          popEvents: {},
+          size: 2,
           pushEvents: {
             "urn:comunica:default:extract-links/actors#predicates-solid": 1,
+            "urn:comunica:default:extract-links/actors#predicates-ldp": 2
           },
-          size: 1,
-        },
+          popEvents: {
+            "urn:comunica:default:extract-links/actors#predicates-solid": 1
+          }
+        }
       };
 
       const newExpectedHistory = new Map(

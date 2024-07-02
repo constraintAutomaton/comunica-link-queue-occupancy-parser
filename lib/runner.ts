@@ -1,11 +1,11 @@
 import { parseLine, HistoryByQuery } from "./util";
-import { ReadStream, createReadStream } from "node:fs";
+import { createReadStream } from "node:fs";
 import { createInterface } from 'readline';
 
 
 
-export async function fromLogFile(path: string, forceNodeJs = false): Promise<HistoryByQuery> {
-    const stream = await createReadStream(path);
+export async function fromLogFile(path: string): Promise<HistoryByQuery> {
+    const stream = createReadStream(path);
 
     const history: HistoryByQuery = new Map();
 
